@@ -1,27 +1,66 @@
 import React from "react";
-import { Button, Form } from "react-native";
+import { Button, Form, Alert } from "react-native";
 import styled from "styled-components";
 import firebase from "./components/Firebase";
 
 export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { username: "", password: "" };
+  }
+
   render() {
     return (
       <Container>
         <Logo source={require("./assets/text/logo.png")} />
         <Label>Iniciar Sesión</Label>
-        <Form>
-          <TextInput placeholder="Correo" />
-          <TextInput placeholder="Contraseña" />
+        <TextInput
+          placeholder="Correo"
+          onChangeText={username => this.setState({ username })}
+          value={this.state.username}
+        />
+        <TextInput
+          placeholder="Contraseña"
+          onChangeText={password => this.setState({ password })}
+          value={this.state.password}
+          secureTextEntry={true}
+        />
 
-          <BigButton>
-            <Text>Hola</Text>
-          </BigButton>
-        </Form>
+        <BigButton onPress={this._signin}>
+          <Text>Hola</Text>
+        </BigButton>
         <BlackText>¿No tienes una cuenta?</BlackText>
         <Button color="#B95482" title="Registrate" />
       </Container>
     );
   }
+
+  _signin = async () => {
+    const email = this.state.username;
+    const password = this.state.password;
+
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .catch(function(error) {
+        Alert.alert("Error", error.message);
+      })
+      .then(response => {
+        console.log(response);
+
+        this.setState({ isLoading: false });
+
+        if (response) {
+          this.setState({ isSuccessful: true });
+
+          Alert.alert("Yey", "Ya iniciaste sesión");
+
+          setTimeout(() => {
+            this.setState({ isSuccessful: false });
+          }, 1000);
+        }
+      });
+  };
 }
 
 const Container = styled.View`
